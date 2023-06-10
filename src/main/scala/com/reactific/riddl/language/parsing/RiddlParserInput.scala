@@ -45,7 +45,7 @@ private case class EmptyParserInput() extends RiddlParserInput {
 
 case class StringParserInput(
   data: String,
-  origin: String = At.defaultSourceName)
+  origin: String)
     extends RiddlParserInput {
   val root: File = new File(System.getProperty("user.dir"))
   override def isEmpty: Boolean = data.isEmpty
@@ -91,7 +91,7 @@ object RiddlParserInput {
 
   implicit def apply(
     data: String
-  ): RiddlParserInput = { StringParserInput(data) }
+  ): RiddlParserInput = { StringParserInput(data, "") }
 
   implicit def apply(source: Source): RiddlParserInput = {
     SourceParserInput(source, source.descr)
