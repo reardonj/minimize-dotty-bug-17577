@@ -109,47 +109,10 @@ trait Definitions extends Expressions with Options {
 
   trait Processor[OPT <: OptionValue, DEF <: Definition] extends VitalDefinition[OPT, DEF] with WithTypes
 
-  case class RootContainer(
-    domains: Seq[Domain] = Nil,
-    authors: Seq[Author] = Nil,
-    inputs: Seq[RiddlParserInput] = Nil
-  ) extends Definition
-
-  object RootContainer
 
   sealed trait MessageRef extends Reference[Type] 
 
   object MessageRef
-
-  case class CommandRef(
-    loc: At,
-    id: Option[Identifier] = None,
-    pathId: PathIdentifier
-  ) extends MessageRef
-
-  case class EventRef(
-    loc: At,
-    id: Option[Identifier] = None,
-    pathId: PathIdentifier
-  ) extends MessageRef
-
-  case class QueryRef(
-    loc: At,
-    id: Option[Identifier] = None,
-    pathId: PathIdentifier
-  ) extends MessageRef
-
-  case class ResultRef(
-    loc: At,
-    id: Option[Identifier] = None,
-    pathId: PathIdentifier
-  ) extends MessageRef
-
-  case class RecordRef(
-    loc: At,
-    id: Option[Identifier] = None,
-    pathId: PathIdentifier
-  ) extends MessageRef
 
   case class Constant(
     loc: At,
@@ -179,25 +142,10 @@ trait Definitions extends Expressions with Options {
     pathId: PathIdentifier = PathIdentifier.empty
   ) extends Reference[Type]
 
-  // ////////////////////////////////////////////////////////// Gherkin
-
-  case class GivenClause(loc: At, scenario: Seq[LiteralString]) extends GherkinClause
-
-  case class WhenClause(loc: At, condition: Condition) extends GherkinClause
-
-  case class ThenClause(loc: At, action: Action) extends GherkinClause
-
-  case class ButClause(loc: At, action: Action) extends GherkinClause
 
   case class Example(
     loc: At,
     id: Identifier,
-    givens: Seq[GivenClause] = Seq.empty[GivenClause],
-    whens: Seq[WhenClause] = Seq.empty[WhenClause],
-    thens: Seq[ThenClause] = Seq.empty[ThenClause],
-    buts: Seq[ButClause] = Seq.empty[ButClause],
-    brief: Option[LiteralString] = Option.empty[LiteralString],
-    description: Option[Description] = Option.empty[Description]
   ) extends LeafDefinition
       with OnClauseDefinition
       with FunctionDefinition
@@ -248,36 +196,6 @@ trait Definitions extends Expressions with Options {
       with StateDefinition
 
   sealed trait OnClause extends HandlerDefinition 
-
-  case class OnOtherClause(
-    loc: At,
-    examples: Seq[Example] = Seq.empty[Example],
-    brief: Option[LiteralString] = Option.empty[LiteralString],
-    description: Option[Description] = None
-  ) extends OnClause
-
-  case class OnInitClause(
-    loc: At,
-    examples: Seq[Example] = Seq.empty[Example],
-    brief: Option[LiteralString] = Option.empty[LiteralString],
-    description: Option[Description] = None
-  ) extends OnClause
-
-  case class OnMessageClause(
-    loc: At,
-    msg: MessageRef,
-    from: Option[Reference[Definition]],
-    examples: Seq[Example] = Seq.empty[Example],
-    brief: Option[LiteralString] = Option.empty[LiteralString],
-    description: Option[Description] = None
-  ) extends OnClause
-
-  case class OnTermClause(
-    loc: At,
-    examples: Seq[Example] = Seq.empty[Example],
-    brief: Option[LiteralString] = Option.empty[LiteralString],
-    description: Option[Description] = None
-  ) extends OnClause
 
   case class Handler(
     loc: At,
@@ -333,10 +251,6 @@ trait Definitions extends Expressions with Options {
       with ContextDefinition
 
   sealed trait AdaptorDirection extends RiddlValue
-
-  case class InboundAdaptor(loc: At) extends AdaptorDirection 
-
-  case class OutboundAdaptor(loc: At) extends AdaptorDirection
 
   case class Adaptor(
     loc: At,
@@ -477,18 +391,8 @@ trait Definitions extends Expressions with Options {
   ) extends LeafDefinition
       with ContextDefinition
       with WithOptions[ConnectorOption] 
+
   sealed trait StreamletShape extends RiddlValue 
-
-  case class Void(loc: At) extends StreamletShape 
-
-  case class Source(loc: At) extends StreamletShape 
-  case class Sink(loc: At) extends StreamletShape 
-
-  case class Flow(loc: At) extends StreamletShape 
-  case class Merge(loc: At) extends StreamletShape 
-
-  case class Split(loc: At) extends StreamletShape
-  case class Router(loc: At) extends StreamletShape
 
   case class Streamlet(
     loc: At,
@@ -586,45 +490,6 @@ trait Definitions extends Expressions with Options {
 
   sealed trait GenericInteraction extends Interaction with LeafDefinition 
 
- 
-  case class ArbitraryInteraction(
-    loc: At,
-    id: Identifier = Identifier.empty,
-    from: Reference[Definition],
-    relationship: LiteralString,
-    to: Reference[Definition],
-    brief: Option[LiteralString] = None,
-    description: Option[Description] = None
-  ) extends GenericInteraction 
-
-  case class SelfInteraction(
-    loc: At,
-    id: Identifier = Identifier.empty,
-    from: Reference[Definition],
-    relationship: LiteralString,
-    brief: Option[LiteralString] = None,
-    description: Option[Description] = None
-  ) extends GenericInteraction 
-
-  case class TakeOutputInteraction(
-    loc: At,
-    id: Identifier = Identifier.empty,
-    from: OutputRef,
-    relationship: LiteralString,
-    to: UserRef,
-    brief: Option[LiteralString] = None,
-    description: Option[Description] = None
-  ) extends GenericInteraction 
-
-  case class PutInputInteraction(
-    loc: At,
-    id: Identifier = Identifier.empty,
-    from: UserRef,
-    relationship: LiteralString,
-    to: InputRef,
-    brief: Option[LiteralString] = None,
-    description: Option[Description] = None
-  ) extends GenericInteraction 
 
   case class UseCase (
     loc: At,
