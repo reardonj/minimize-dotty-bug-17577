@@ -1,8 +1,5 @@
-## sbt project compiled with Scala 3
+## Demonstratation for Dotty Bug #17577
 
-### Usage
+This repository demonstrates the expontential blowup in scaladoc generation with a trait heirarchy with many nested types.
 
-This is a normal sbt project. You can compile code with `sbt compile`, run it with `sbt run`, and `sbt console` will start a Scala 3 REPL.
-
-For more information on the sbt-dotty plugin, see the
-[scala3-example-project](https://github.com/scala/scala3-example-project/blob/main/README.md).
+Running `sbt doc` on the repository as is should take several minutes. Moving the traits nested inside `trait A` to the top level will reduce the time to run `sbt doc` to seconds. Similarly, reducing the depth of the inheritance tree, or removing some nested types will incrementally reduce doc build time.
