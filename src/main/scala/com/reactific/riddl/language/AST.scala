@@ -6,4 +6,4 @@
 
 package com.reactific.riddl.language
 
-object AST extends ast.Actions
+object AST 
