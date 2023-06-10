@@ -6,8 +6,6 @@
 
 package com.reactific.riddl.language.parsing
 
-/** Terminal symbol definitions in various categories */
-
 object Terminals {
 
   object Punctuation {

@@ -8,7 +8,6 @@ package com.reactific.riddl.language.ast
 
 import com.reactific.riddl.language.parsing.Terminals.*
 
-/** A portion of the AST that deals with Types and TypeExpressions */
 trait Types extends AbstractDefinitions {
 
 ///////////////////////////////////////////////////////////// TYPES
@@ -20,8 +19,6 @@ trait Types extends AbstractDefinitions {
 
   sealed trait TypeDefinition extends Definition
 
-  /** Base trait of an expression that defines a type
-    */
   sealed trait TypeExpression extends RiddlValue {
     def isAssignmentCompatible(other: TypeExpression): Boolean = {
       (other == this) || (other.getClass == this.getClass) ||
@@ -40,75 +37,30 @@ trait Types extends AbstractDefinitions {
   sealed trait IntegerTypeExpression extends NumericType with TypeExpression
   sealed trait RealTypeExpression extends NumericType
 
-  /** A TypeExpression that references another type by PathIdentifier
-    * @param loc
-    *   The location of the AliasedTypeExpression
-    * @param pathId
-    *   The path identifier to the aliased type
-    */
   case class AliasedTypeExpression(loc: At, pathId: PathIdentifier) extends TypeExpression 
 
   // //////////////////////////////////////////////////////////////////////// TYPES
 
-  /** Base of an enumeration for the four kinds of message types */
   sealed trait AggregateUseCase
 
-  /** An enumerator value for command types */
   case object CommandCase extends AggregateUseCase
 
-  /** An enumerator value for event types */
   case object EventCase extends AggregateUseCase
 
-  /** An enumerator value for query types */
   case object QueryCase extends AggregateUseCase
 
-  /** An enumerator value for result types */
   case object ResultCase extends AggregateUseCase 
 
   case object RecordCase extends AggregateUseCase 
 
-  /** Base trait of the cardinality type expressions */
   sealed trait Cardinality extends TypeExpression 
 
-  /** A cardinality type expression that indicates another type expression as being optional; that is with a cardinality
-    * of 0 or 1.
-    *
-    * @param loc
-    *   The location of the optional cardinality
-    * @param typeExp
-    *   The type expression that is indicated as optional
-    */
   case class Optional(loc: At, typeExp: TypeExpression) extends Cardinality 
 
-  /** A cardinality type expression that indicates another type expression as having zero or more instances.
-    *
-    * @param loc
-    *   The location of the zero-or-more cardinality
-    * @param typeExp
-    *   The type expression that is indicated with a cardinality of zero or more.
-    */
   case class ZeroOrMore(loc: At, typeExp: TypeExpression) extends Cardinality 
 
-  /** A cardinality type expression that indicates another type expression as having one or more instances.
-    *
-    * @param loc
-    *   The location of the one-or-more cardinality
-    * @param typeExp
-    *   The type expression that is indicated with a cardinality of one or more.
-    */
   case class OneOrMore(loc: At, typeExp: TypeExpression) extends Cardinality 
 
-  /** A cardinality type expression that indicates another type expression as having a specific range of instances
-    *
-    * @param loc
-    *   The location of the one-or-more cardinality
-    * @param typeExp
-    *   The type expression that is indicated with a cardinality of one or more.
-    * @param min
-    *   The minimum number of items
-    * @param max
-    *   The maximum number of items
-    */
   case class SpecificRange(
     loc: At,
     typeExp: TypeExpression,
@@ -116,17 +68,6 @@ trait Types extends AbstractDefinitions {
     max: Long
   ) extends Cardinality 
 
-  /** Represents one variant among (one or) many variants that comprise an [[Enumeration]]
-    *
-    * @param id
-    *   the identifier (name) of the Enumerator
-    * @param enumVal
-    *   the optional int value
-    * @param brief
-    *   A brief description (one sentence) for use in documentation
-    * @param description
-    *   the description of the enumerator. Each Enumerator in an enumeration may define independent descriptions
-    */
   case class Enumerator(
     loc: At,
     id: Identifier,
@@ -136,39 +77,10 @@ trait Types extends AbstractDefinitions {
   ) extends LeafDefinition
       with TypeDefinition 
 
-  /** A type expression that defines its range of possible values as being one value from a set of enumerated values.
-    *
-    * @param loc
-    *   The location of the enumeration type expression
-    * @param enumerators
-    *   The set of enumerators from which the value of this enumeration may be chosen.
-    */
   case class Enumeration(loc: At, enumerators: Seq[Enumerator]) extends IntegerTypeExpression 
 
-  /** A type expression that that defines its range of possible values as being any one of the possible values from a
-    * set of other type expressions.
-    *
-    * @param loc
-    *   The location of the alternation type expression
-    * @param of
-    *   The set of type expressions from which the value for this alternation may be chosen
-    */
   case class Alternation(loc: At, of: Seq[AliasedTypeExpression]) extends TypeExpression 
 
-  /** A definition that is a field of an aggregation type expressions. Fields associate an identifier with a type
-    * expression.
-    *
-    * @param loc
-    *   The location of the field definition
-    * @param id
-    *   The name of the field
-    * @param typeEx
-    *   The type of the field
-    * @param brief
-    *   A brief description (one sentence) for use in documentation
-    * @param description
-    *   An optional description of the field.
-    */
   case class Field(
     loc: At,
     id: Identifier,
@@ -184,269 +96,88 @@ trait Types extends AbstractDefinitions {
       with FunctionDefinition
       with ProjectorDefinition 
 
-  /** A type expression that contains an aggregation of fields
-    *
-    * This is used as the base trait of Aggregations and Messages
-    */
   trait AggregateTypeExpression extends TypeExpression with Container[Field] 
 
-  /** A type expression that takes a set of named fields as its value.
-    *
-    * @param loc
-    *   The location of the aggregation definition
-    * @param fields
-    *   The fields of the aggregation
-    */
   case class Aggregation(loc: At, fields: Seq[Field] = Seq.empty[Field]) extends AggregateTypeExpression
 
   object Aggregation {
     def empty(loc: At = At.empty): Aggregation = { Aggregation(loc) }
   }
 
-  /** A type expression for a sequence of some other type expression
-    * @param loc
-    *   Where this type expression occurs in the source code
-    * @param of
-    *   The type expression of the sequence's elements
-    */
   case class Sequence(loc: At, of: TypeExpression) extends TypeExpression 
 
-  /** A type expressions that defines a mapping from a key to a value. The value of a Mapping is the set of mapped key
-    * -> value pairs, based on which keys have been provided values.
-    *
-    * @param loc
-    *   The location of the mapping type expression
-    * @param from
-    *   The type expression for the keys of the mapping
-    * @param to
-    *   The type expression for the values of the mapping
-    */
   case class Mapping(loc: At, from: TypeExpression, to: TypeExpression) extends TypeExpression 
 
-  /** A mathematical set of some other type of value
-    * @param loc
-    *   Where the type expression occurs in the source
-    * @param of
-    *   The type of the elements of the set.
-    */
   case class Set(loc: At, of: TypeExpression) extends TypeExpression 
 
-  /** A type expression whose value is a reference to an instance of an entity.
-    *
-    * @param loc
-    *   The location of the reference type expression
-    * @param entity
-    *   The type of entity referenced by this type expression.
-    */
   case class EntityReferenceTypeExpression(loc: At, entity: PathIdentifier) extends TypeExpression 
 
-  /** A type expression that defines a string value constrained by a Java Regular Expression
-    *
-    * @param loc
-    *   The location of the pattern type expression
-    * @param pattern
-    *   The Java Regular Expression to which values of this type expression must obey.
-    * @see
-    *   https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html
-    */
   case class Pattern(loc: At, pattern: Seq[LiteralString]) extends PredefinedType 
 
-  /** A type expression for values that ensure a unique identifier for a specific entity.
-    *
-    * @param loc
-    *   The location of the unique identifier type expression
-    * @param entityPath
-    *   The path identifier of the entity type
-    */
   case class UniqueId(loc: At, entityPath: PathIdentifier) extends PredefinedType 
-  /** A type expression for an aggregation that is marked as being one of the use cases. This is used for messages,
-    * records, and other aggregate types that need to have their purpose distinguished.
-    *
-    * @param loc
-    *   The location of the message type expression
-    * @param usecase
-    *   The kind of message defined
-    * @param fields
-    *   The fields of the message's aggregation
-    */
+
   case class AggregateUseCaseTypeExpression(
     loc: At,
     usecase: AggregateUseCase,
     fields: Seq[Field] = Seq.empty[Field]
   ) extends AggregateTypeExpression 
 
-  /** Base class of all pre-defined type expressions
-    */
   abstract class PredefinedType extends TypeExpression 
 
   object PredefinedType 
 
-  /** A type expression for values of arbitrary string type, possibly bounded by length.
-    *
-    * @param loc
-    *   The location of the Strng type expression
-    * @param min
-    *   The minimum length of the string (default: 0)
-    * @param max
-    *   The maximum length of the string (default: MaxInt)
-    */
   case class Strng(loc: At, min: Option[Long] = None, max: Option[Long] = None) extends PredefinedType 
 
   case class Currency(loc: At, country: String) extends PredefinedType 
 
-  /** The simplest type expression: Abstract An abstract type expression is one that is not defined explicitly. It is
-    * treated as a concrete type but without any structural or type information. This is useful for types that are
-    * defined only at implementation time or for types whose variations are so complicated they need to remain abstract
-    * at the specification level.
-    * @param loc
-    *   The location of the Bool type expression
-    */
   case class Abstract(loc: At) extends PredefinedType 
 
-  /** A predefined type expression for boolean values (true / false)
-    *
-    * @param loc
-    *   The location of the Bool type expression
-    */
   case class Bool(loc: At) extends PredefinedType with IntegerTypeExpression 
 
-  /** A predefined type expression for an arbitrary number value
-    *
-    * @param loc
-    *   The location of the number type expression
-    */
   case class Number(loc: At) extends PredefinedType with IntegerTypeExpression with RealTypeExpression 
 
-  /** A predefined type expression for an integer value
-    *
-    * @param loc
-    *   The location of the integer type expression
-    */
   case class Integer(loc: At) extends PredefinedType with IntegerTypeExpression 
 
   case class Whole(loc: At) extends PredefinedType with IntegerTypeExpression 
 
   case class Natural(loc: At) extends PredefinedType with IntegerTypeExpression 
 
-  /** A type expression that defines a set of integer values from a minimum value to a maximum value, inclusively.
-    *
-    * @param loc
-    *   The location of the RangeType type expression
-    * @param min
-    *   The minimum value of the RangeType
-    * @param max
-    *   The maximum value of the RangeType
-    */
   case class RangeType(loc: At, min: Long, max: Long) extends IntegerTypeExpression 
 
-  /** A predefined type expression for a decimal value including IEEE floating point syntax.
-    *
-    * @param loc
-    *   The location of the decimal integer type expression
-    */
   case class Decimal(loc: At, whole: Long, fractional: Long) extends RealTypeExpression 
 
-  /** A predefined type expression for a real number value.
-    *
-    * @param loc
-    *   The location of the real number type expression
-    */
   case class Real(loc: At) extends PredefinedType with RealTypeExpression 
 
-  /** A predefined type expression for the SI Base unit for Current (amperes)
-    * @param loc
-    *   \- The locaitonof the current type expression
-    */
   case class Current(loc: At) extends PredefinedType with RealTypeExpression 
 
-  /** A predefined type expression for the SI Base unit for Length (meters)
-    * @param loc
-    *   The location of the current type expression
-    */
   case class Length(loc: At) extends PredefinedType with RealTypeExpression 
 
-  /** A predefined type expression for the SI Base Unit for Luminosity (candela)
-    * @param loc
-    *   The location of the luminosity expression
-    */
   case class Luminosity(loc: At) extends PredefinedType with RealTypeExpression 
 
   case class Mass(loc: At) extends PredefinedType with RealTypeExpression 
 
-  /** A predefined type expression for the SI Base Unit for Mole (mole)
-    * @param loc
-    *   \- The location of the mass type expression
-    */
   case class Mole(loc: At) extends PredefinedType with RealTypeExpression 
 
-  /** A predefined type expression for the SI Base Unit for Temperature (Kelvin)
-    * @param loc
-    *   \- The location of the mass type expression
-    */
   case class Temperature(loc: At) extends PredefinedType with RealTypeExpression 
 
   sealed trait TimeType extends PredefinedType
 
-  /** A predefined type expression for a calendar date.
-    *
-    * @param loc
-    *   The location of the date type expression.
-    */
   case class Date(loc: At) extends TimeType 
 
-  /** A predefined type expression for a clock time with hours, minutes, seconds.
-    *
-    * @param loc
-    *   The location of the time type expression.
-    */
   case class Time(loc: At) extends TimeType 
-  /** A predefined type expression for a calendar date and clock time combination.
-    *
-    * @param loc
-    *   The location of the datetime type expression.
-    */
+
   case class DateTime(loc: At) extends TimeType 
-  /** A predefined type expression for a timestamp that records the number of milliseconds from the epoch.
-    *
-    * @param loc
-    *   The location of the timestamp
-    */
+
   case class TimeStamp(loc: At) extends TimeType 
-  /** A predefined type expression for a time duration that records the number of milliseconds between two fixed points
-    * in time
-    *
-    * @param loc
-    *   The location of the duration type expression
-    */
+
   case class Duration(loc: At) extends TimeType 
 
-  /** A predefined type expression for a universally unique identifier as defined by the Java Virtual Machine.
-    *
-    * @param loc
-    *   The location of the UUID type expression
-    */
   case class UUID(loc: At) extends PredefinedType 
 
-  /** A predefined type expression for a Uniform Resource Locator of a specific schema.
-    *
-    * @param loc
-    *   The location of the URL type expression
-    * @param scheme
-    *   The scheme to which the URL is constrained.
-    */
   case class URL(loc: At, scheme: Option[LiteralString] = None) extends PredefinedType 
 
-  /** A predefined type expression for a location on earth given in latitude and longitude.
-    *
-    * @param loc
-    *   The location of the LatLong type expression.
-    */
   case class Location(loc: At) extends PredefinedType 
-  /** A predefined type expression for a type that can have no values
-    *
-    * @param loc
-    *   The location of the nothing type expression.
-    */
+
   case class Nothing(loc: At) extends PredefinedType 
 
 }
