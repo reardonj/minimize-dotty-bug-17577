@@ -1,0 +1,17 @@
+.bloop/
+.metals/
+.vscode/
+/.bsp/
+!.idea/runConfigurations/
+!.idea/dictionaries
+/.idea/
+target
+**/target/
+**/.DS_Store
+.DS_Store
+**/*.zip
+**/*.gzip
+/chroma-riddl-lexer/go.sum
+/.riddl-timestamp
+doc/src/main/hugo/public/
+*.lock
