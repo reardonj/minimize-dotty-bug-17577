@@ -10,7 +10,6 @@ import com.reactific.riddl.language.parsing.RiddlParserInput
 
 import scala.language.implicitConversions
 
-/** A location of an item in the input */
 case class At(
   source: String,
   offset: Int = 0)

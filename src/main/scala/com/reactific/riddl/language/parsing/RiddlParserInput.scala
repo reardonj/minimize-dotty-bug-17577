@@ -15,7 +15,6 @@ import scala.collection.Searching
 import scala.io.Source
 import scala.language.implicitConversions
 
-/** Same as fastparse.IndexedParserInput but with Location support */
 abstract class RiddlParserInput {
   def origin: String
   def data: String
